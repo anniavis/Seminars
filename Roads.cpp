@@ -5,11 +5,11 @@
 class Graph
 {
 private:
-	int size;
+	size_t size;
 	std::vector<std::vector<int>> vec;
 	
 public:
-	Graph(int input_size) : size(input_size), vec(input_size, std::vector<int>(input_size, 0)) {}
+	Graph(size_t input_size) : size(input_size), vec(input_size, std::vector<int>(input_size, 0)) {}
 
 	void AddEdge()
 	{
@@ -60,7 +60,6 @@ int main()
 	graph.AddEdge();
 
 	std::cout << graph.Count();
-
 
 	//system("PAUSE");
 	return 0;
