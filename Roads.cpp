@@ -4,62 +4,63 @@
 
 class Graph
 {
-private:
-	size_t size;
-	std::vector<std::vector<int>> vec;
-	
+protected:
+	size_t vertex_count_, edge_count_;
+
 public:
-	Graph(size_t input_size) : size(input_size), vec(input_size, std::vector<int>(input_size, 0)) {}
+	typedef size_t Vertex;
+	Graph(size_t vertex_count) : vertex_count_(vertex_count), edge_count_(0) {}
 
-	void AddEdge()
+	size_t getVertexCount() const
 	{
-		int number;
+		return vertex_count_;
+	}
 
-		for (int i = 0; i < size; ++i)
+	size_t getEdgeCount() const
+	{
+		return edge_count_;
+	}
+};
+
+
+class GraphAdjMatrix : public Graph
+{
+private:
+	std::vector<std::vector<Vertex>> adj_matrix_;
+
+public:
+	GraphAdjMatrix(const std::vector<std::vector<Graph::Vertex>>& adj_matrix) : Graph(adj_matrix.size()), adj_matrix_(adj_matrix)
+	{
+		for (size_t i = 0; i < vertex_count_; ++i)
 		{
-			for (int j = 0; j < size; ++j)
+			for (size_t j = 0; j < vertex_count_; ++j)
 			{
-				std::cin >> number;
-
-				if (number == 1)
-				{
-					vec[i][j] = 1;
-				}
+				edge_count_ += adj_matrix_[i][j];
 			}
-
-			
 		}
 	}
+};
 
-	int Count()
-	{
-		int roads = 0;
-
-		for (int i = 0; i < size; ++i)
-		{
-			for (int j = 0; j < size; ++j)
-			{
-				if (vec[i][j] == 1)
-				{
-					roads++;
-				}
-			}	
-		}
-
-		return roads / 2;
-	}
-}; 
 
 int main()
 {
 	int n;
-
 	std::cin >> n;
 
-	Graph graph = Graph(n);
-	graph.AddEdge();
+	std::vector<std::vector<Graph::Vertex>> matrix(n, std::vector<Graph::Vertex>(n));
+	Graph::Vertex input_vertex;
 
-	std::cout << graph.Count();
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < n; ++j)
+		{
+			std::cin >> input_vertex;
+			matrix[i][j] = input_vertex;
+		}
+	}
+
+	GraphAdjMatrix graph_adj_matrix(matrix);
+	std::cout << graph_adj_matrix.getEdgeCount() / 2;
 
 	//system("PAUSE");
 	return 0;
