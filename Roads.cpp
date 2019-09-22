@@ -26,10 +26,10 @@ public:
 class GraphAdjMatrix : public Graph
 {
 private:
-	std::vector<std::vector<Vertex>> adj_matrix_;
+	std::vector<std::vector<size_t>> adj_matrix_;
 
 public:
-	GraphAdjMatrix(const std::vector<std::vector<Graph::Vertex>>& adj_matrix) : Graph(adj_matrix.size()), adj_matrix_(adj_matrix)
+	GraphAdjMatrix(const std::vector<std::vector<size_t>>& adj_matrix) : Graph(adj_matrix.size()), adj_matrix_(adj_matrix)
 	{
 		for (size_t i = 0; i < vertex_count_; ++i)
 		{
@@ -47,15 +47,15 @@ int main()
 	int n;
 	std::cin >> n;
 
-	std::vector<std::vector<Graph::Vertex>> matrix(n, std::vector<Graph::Vertex>(n));
-	Graph::Vertex input_vertex;
+	std::vector<std::vector<size_t>> matrix(n, std::vector<size_t>(n));
+	size_t input;
 
 	for (int i = 0; i < n; ++i)
 	{
 		for (int j = 0; j < n; ++j)
 		{
-			std::cin >> input_vertex;
-			matrix[i][j] = input_vertex;
+			std::cin >> input;
+			matrix[i][j] = input;
 		}
 	}
 
