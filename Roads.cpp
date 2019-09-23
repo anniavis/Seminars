@@ -20,6 +20,8 @@ public:
 	{
 		return edge_count_;
 	}
+
+	virtual void addEdge(const Vertex& start, const Vertex& finish) = 0;
 };
 
 
@@ -29,15 +31,13 @@ private:
 	std::vector<std::vector<size_t>> adj_matrix_;
 
 public:
-	GraphAdjMatrix(const std::vector<std::vector<size_t>>& adj_matrix) : Graph(adj_matrix.size()), adj_matrix_(adj_matrix)
+	GraphAdjMatrix(size_t vertex_count) : Graph(vertex_count), adj_matrix_(vertex_count + 1, std::vector<size_t>(vertex_count + 1, 0)) {}
+	
+	void addEdge(const Vertex& start, const Vertex& finish) override
 	{
-		for (size_t i = 0; i < vertex_count_; ++i)
-		{
-			for (size_t j = 0; j < vertex_count_; ++j)
-			{
-				edge_count_ += adj_matrix_[i][j];
-			}
-		}
+		adj_matrix_[start][finish] = 1;
+		adj_matrix_[finish][start] = 1;
+		edge_count_++;
 	}
 };
 
@@ -47,19 +47,23 @@ int main()
 	int n;
 	std::cin >> n;
 
-	std::vector<std::vector<size_t>> matrix(n, std::vector<size_t>(n));
 	size_t input;
+	GraphAdjMatrix graph_adj_matrix(n);
 
-	for (int i = 0; i < n; ++i)
+	for (Graph::Vertex i = 1; i < n + 1; ++i)
 	{
-		for (int j = 0; j < n; ++j)
+		for (Graph::Vertex j = 1; j < n + 1; ++j)
 		{
 			std::cin >> input;
-			matrix[i][j] = input;
+			
+			if (input == 1)
+			{
+				graph_adj_matrix.addEdge(i, j);
+			}
 		}
 	}
 
-	GraphAdjMatrix graph_adj_matrix(matrix);
+	
 	std::cout << graph_adj_matrix.getEdgeCount() / 2;
 
 	//system("PAUSE");
