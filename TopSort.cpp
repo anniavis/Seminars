@@ -78,7 +78,7 @@ namespace GraphProcessing
 {
 	enum VertexMark { WHITE, GREY, BLACK };
 
-	bool DFS_visit_isCyclic(const Graph& graph, const Graph::Vertex& vertex, std::vector<VertexMark>& vertex_marks)
+	bool DFS_visit_isCycleGraph(const Graph& graph, const Graph::Vertex& vertex, std::vector<VertexMark>& vertex_marks)
 	{
 		vertex_marks[vertex] = GREY;
 		std::vector<Graph::Vertex> neighbors = graph.getNeighbors(vertex);
@@ -86,7 +86,7 @@ namespace GraphProcessing
 		{
 			if (vertex_marks[u] == WHITE)
 			{
-				if (DFS_visit_isCyclic(graph, u, vertex_marks))
+				if (DFS_visit_isCycleGraph(graph, u, vertex_marks))
 				{
 					return true;
 				}
@@ -100,14 +100,14 @@ namespace GraphProcessing
 		return false;
 	}
 
-	bool isCyclic(const Graph& graph)
+	bool isCycleGraph(const Graph& graph)
 	{
 		std::vector<VertexMark> vertex_marks(graph.getVertexCount() + 1, WHITE);
 		for (Graph::Vertex u = 1; u < graph.getVertexCount() + 1; ++u)
 		{
 			if (vertex_marks[u] == WHITE)
 			{
-				if (DFS_visit_isCyclic(graph, u, vertex_marks))
+				if (DFS_visit_isCycleGraph(graph, u, vertex_marks))
 				{
 					return true;
 				}
@@ -132,7 +132,7 @@ namespace GraphProcessing
 
 	std::vector<Graph::Vertex> TopSort(const Graph& graph)
 	{
-		if (!graph.isDirected() || isCyclic(graph))
+		if (!graph.isDirected() || isCycleGraph(graph))
 		{
 			return {};
 		}
