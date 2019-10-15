@@ -20,11 +20,7 @@ public:
 
 	size_t getEdgeCount() const
 	{
-		if (is_directed_ == 0)
-		{
-			return edge_count_ / 2;
-		}
-		return edge_count_;
+		return is_directed_ == 0 ? edge_count_ / 2 : edge_count_;
 	}
 
 	bool isDirected() const
@@ -34,7 +30,6 @@ public:
 
 	virtual void addEdge(const Vertex& start, const Vertex& finish) = 0;
 	virtual size_t getVertexDeg(const Vertex& vertex) const = 0;
-	virtual std::vector<std::vector<Vertex>> getAdjList() const = 0;
 	virtual std::vector<Vertex> getNeighbors(const Vertex& v) const = 0;
 };
 
@@ -62,11 +57,6 @@ public:
 		return adj_list_[vertex].size();
 	}
 
-	std::vector<std::vector<Vertex>> getAdjList() const override
-	{
-		return adj_list_;
-	}
-
 	std::vector<Vertex> getNeighbors(const Vertex& vertex) const override
 	{
 		return adj_list_[vertex];
@@ -78,20 +68,19 @@ namespace GraphProcessing
 {
 	enum VertexMark { WHITE, GREY, BLACK };
 
-	bool DFS_visit_isCycleGraph(const Graph& graph, const Graph::Vertex& vertex, std::vector<VertexMark>& vertex_marks)
+	bool dfsVisitIsCycleGraph(const Graph& graph, const Graph::Vertex& vertex, std::vector<VertexMark>& vertex_marks)
 	{
 		vertex_marks[vertex] = GREY;
-		std::vector<Graph::Vertex> neighbors = graph.getNeighbors(vertex);
-		for (Graph::Vertex u : neighbors)
+		for (Graph::Vertex u : graph.getNeighbors(vertex))
 		{
 			if (vertex_marks[u] == WHITE)
 			{
-				if (DFS_visit_isCycleGraph(graph, u, vertex_marks))
+				if (dfsVisitIsCycleGraph(graph, u, vertex_marks))
 				{
 					return true;
 				}
-			}
-			else if (vertex_marks[u] == GREY)
+			} else 
+			if (vertex_marks[u] == GREY)
 			{
 				return true;
 			}
@@ -107,7 +96,7 @@ namespace GraphProcessing
 		{
 			if (vertex_marks[u] == WHITE)
 			{
-				if (DFS_visit_isCycleGraph(graph, u, vertex_marks))
+				if (dfsVisitIsCycleGraph(graph, u, vertex_marks))
 				{
 					return true;
 				}
@@ -116,18 +105,17 @@ namespace GraphProcessing
 		return false;
 	}
 
-	void DFS_visit_TopSort(const Graph& graph, const Graph::Vertex& vertex, std::vector<bool>& used, std::vector<Graph::Vertex>& vertices_in_right_order)
+	void dfsVisitTopSort(const Graph& graph, const Graph::Vertex& vertex, std::vector<bool>& used, std::vector<Graph::Vertex>& top_sort_result)
 	{
 		used[vertex] = true;
-		std::vector<Graph::Vertex> neighbors = graph.getNeighbors(vertex);
-		for (Graph::Vertex u : neighbors)
+		for (Graph::Vertex u : graph.getNeighbors(vertex))
 		{
 			if (!used[u])
 			{
-				DFS_visit_TopSort(graph, u, used, vertices_in_right_order);
+				dfsVisitTopSort(graph, u, used, top_sort_result);
 			}
 		}
-		vertices_in_right_order.push_back(vertex);
+		top_sort_result.push_back(vertex);
 	}
 
 	std::vector<Graph::Vertex> TopSort(const Graph& graph)
@@ -137,44 +125,45 @@ namespace GraphProcessing
 			return {};
 		}
 		std::vector<bool> used(graph.getVertexCount() + 1, false);
-		std::vector<Graph::Vertex> vertices_in_right_order;
+		std::vector<Graph::Vertex> top_sort_result;
 		for (Graph::Vertex u = 1; u < graph.getVertexCount() + 1; ++u)
 		{
 			if (!used[u])
 			{
-				DFS_visit_TopSort(graph, u, used, vertices_in_right_order);
+				dfsVisitTopSort(graph, u, used, top_sort_result);
 			}
 		}
-		std::reverse(vertices_in_right_order.begin(), vertices_in_right_order.end());
-		return vertices_in_right_order;
+		std::reverse(top_sort_result.begin(), top_sort_result.end());
+		return top_sort_result;
 	}
 }
 
 
 int main()
 {
-	size_t n, m;
-	std::cin >> n >> m;
-	GraphAdjList graph_adj_list(n, true);
-	for (Graph::Vertex i = 1; i < m + 1; ++i)
+	size_t number_of_soldiers, number_of_relations;
+	std::cin >> number_of_soldiers >> number_of_relations;
+	GraphAdjList graph_adj_list(number_of_soldiers, true);
+	typedef size_t Soldier;
+	for (size_t i = 0; i < number_of_relations; ++i)
 	{
-		Graph::Vertex A, B;
-		std::cin >> A >> B;
-		graph_adj_list.addEdge(A, B);
+		Soldier higher_soldier, lower_soldier;
+		std::cin >> higher_soldier >> lower_soldier;
+		graph_adj_list.addEdge(higher_soldier, lower_soldier);
 	}
-	std::vector<Graph::Vertex> vertices_in_right_order = GraphProcessing::TopSort(graph_adj_list);
-	if (vertices_in_right_order.empty())
+	std::vector<Graph::Vertex> top_sort_result = GraphProcessing::TopSort(graph_adj_list);
+	if (top_sort_result.empty())
 	{
 		std::cout << "No";
 	}
 	else
 	{
 		std::cout << "Yes" << std::endl;
-		for (Graph::Vertex i : vertices_in_right_order)
+		for (Graph::Vertex i : top_sort_result)
 		{
 			std::cout << i << ' ';
 		}
 	}
-	system("PAUSE");
+	//system("PAUSE");
 	return 0;
 }
