@@ -137,7 +137,8 @@ int main()
 	if (min_path.size() == 0)
 	{
 		std::cout << -1;
-	} else
+	} 
+	else
 	{
 		std::cout << min_path.size() - 1 << std::endl;
 
