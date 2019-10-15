@@ -21,11 +21,7 @@ public:
 
 	size_t getEdgeCount() const
 	{
-		if (is_directed_ == 0)
-		{
-			return edge_count_ / 2;
-		}
-		return edge_count_;
+		return is_directed_ == 0 ? edge_count_ / 2 : edge_count_;
 	}
 
 	bool getDirection() const
@@ -35,7 +31,7 @@ public:
 
 	virtual void addEdge(const Vertex& start, const Vertex& finish) = 0;
 	virtual size_t getVertexDeg(const Vertex& vertex) const = 0;
-	virtual std::vector<std::vector<Vertex>> getAdjList() const = 0;
+	virtual std::vector<Vertex> getNeighbors(const Vertex& vertex) const = 0;
 };
 
 
@@ -62,9 +58,9 @@ public:
 		return adj_list_[vertex].size();
 	}
 
-	std::vector<std::vector<Vertex>> getAdjList() const override
+	std::vector<Vertex> getNeighbors(const Vertex& vertex) const override
 	{
-		return adj_list_;
+		return adj_list_[vertex];
 	}
 };
 
@@ -80,11 +76,9 @@ namespace GraphProcessing
 		vertex_queue.push(start);
 		while (!vertex_queue.empty())
 		{
-			Graph::Vertex current;
-			current = vertex_queue.front();
+			Graph::Vertex current = vertex_queue.front();
 			vertex_queue.pop();
-			std::vector<std::vector<Graph::Vertex>> same_adj_list_ = graph.getAdjList();
-			for (Graph::Vertex i : same_adj_list_[current])
+			for (Graph::Vertex i : graph.getNeighbors(current))
 			{
 				if (dist[i] == NOT_SET)
 				{
@@ -102,17 +96,17 @@ namespace GraphProcessing
 		const int NOT_SET = 0;
 		std::vector<Graph::Vertex> prev(graph.getVertexCount() + 1, NOT_SET);
 		std::vector<Graph::Vertex> min_path;
-		int path = GraphProcessing::BFS(graph, start, finish, prev);
-		if (path != -1)
+		if (GraphProcessing::BFS(graph, start, finish, prev) == -1)
 		{
-			Graph::Vertex current = finish;
-			while (current != start)
-			{
-				min_path.push_back(current);
-				current = prev[current];
-			}
-			min_path.push_back(start);
+			return min_path;
 		}
+		Graph::Vertex current = finish;
+		while (current != start)
+		{
+			min_path.push_back(current);
+			current = prev[current];
+		}
+		min_path.push_back(start);
 		std::reverse(min_path.begin(), min_path.end());
 		return min_path;
 	}
@@ -143,8 +137,7 @@ int main()
 	if (min_path.size() == 0)
 	{
 		std::cout << -1;
-	}
-	else
+	} else
 	{
 		std::cout << min_path.size() - 1 << std::endl;
 
