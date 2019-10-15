@@ -19,31 +19,27 @@ public:
 
 	size_t getEdgeCount() const
 	{
-		if (is_directed_ == 0)
-		{
-			return edge_count_ / 2;
-		}
-		return edge_count_;
+		return is_directed_ == 0 ? edge_count_ / 2 : edge_count_;
 	}
 
 	virtual void addEdge(const Vertex& start, const Vertex& finish) = 0;
 };
 
 
-class GraphAdjMatrix : public Graph
+class GraphAdjList : public Graph
 {
 private:
-	std::vector<std::vector<size_t>> adj_matrix_;
+	std::vector<std::vector<Vertex>> adj_list_;
 
 public:
-	GraphAdjMatrix(size_t vertex_count, bool is_directed) : Graph(vertex_count, is_directed), adj_matrix_(vertex_count + 1, std::vector<size_t>(vertex_count + 1, 0)) {}
+	GraphAdjList(size_t vertex_count, bool is_directed) : Graph(vertex_count, is_directed), adj_list_(vertex_count + 1) {}
 
 	void addEdge(const Vertex& start, const Vertex& finish) override
 	{
-		adj_matrix_[start].push_back(finish);
+		adj_list_[start].push_back(finish);
 		if (!is_directed_)
 		{
-			adj_matrix_[finish].push_back(start);
+			adj_list_[finish].push_back(start);
 		}
 		edge_count_++;
 	}
@@ -54,7 +50,7 @@ int main()
 {
 	int n;
 	std::cin >> n;
-	GraphAdjMatrix graph_adj_matrix(n, false);
+	GraphAdjList graph_adj_list(n, false);
 	for (Graph::Vertex i = 1; i < n + 1; ++i)
 	{
 		for (Graph::Vertex j = 1; j < n + 1; ++j)
@@ -63,11 +59,11 @@ int main()
 			std::cin >> input;
 			if (input == 1)
 			{
-				graph_adj_matrix.addEdge(i, j);
+				graph_adj_list.addEdge(i, j);
 			}
 		}
 	}
-	std::cout << graph_adj_matrix.getEdgeCount();
+	std::cout << graph_adj_list.getEdgeCount();
 	//system("PAUSE");
 	return 0;
 }
