@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <queue>
+#include <algorithm>
 
 
 class Graph
@@ -19,11 +21,7 @@ public:
 
 	size_t getEdgeCount() const
 	{
-		if (is_directed_ == 0)
-		{
-			return edge_count_ / 2;
-		}
-		return edge_count_;
+		return is_directed_ == 0 ? edge_count_ / 2 : edge_count_;
 	}
 
 	bool getDirection() const
@@ -33,8 +31,7 @@ public:
 
 	virtual void addEdge(const Vertex& start, const Vertex& finish) = 0;
 	virtual size_t getVertexDeg(const Vertex& vertex) const = 0;
-	virtual std::vector<std::vector<Vertex>> getAdjList() const = 0;
-	virtual std::vector<Vertex> getNeighbors(const Vertex& v) const = 0;
+	virtual std::vector<Vertex> getNeighbors(const Vertex& vertex) const = 0;
 };
 
 
@@ -61,11 +58,6 @@ public:
 		return adj_list_[vertex].size();
 	}
 
-	std::vector<std::vector<Vertex>> getAdjList() const override
-	{
-		return adj_list_;
-	}
-
 	std::vector<Vertex> getNeighbors(const Vertex& vertex) const override
 	{
 		return adj_list_[vertex];
@@ -75,56 +67,70 @@ public:
 
 namespace GraphProcessing
 {
-	void DFS_visit(Graph& graph, const Graph::Vertex& vertex, std::vector<bool>& used)
+	enum VertexGroup { FIRST, SECOND, NOT_SET };
+
+	bool dfsVisit(const Graph& graph, const Graph::Vertex& vertex, std::vector<VertexGroup>& vertex_groups)
 	{
-		used[vertex] = true;
-		std::vector<Graph::Vertex> neighbors = graph.getNeighbors(vertex);
-		for (Graph::Vertex i : neighbors)
+		VertexGroup neighbor_group = (vertex_groups[vertex] == FIRST ? SECOND : FIRST);
+		for (Graph::Vertex i : graph.getNeighbors(vertex))
 		{
-			if (!used[i])
+			if (vertex_groups[i] == NOT_SET)
 			{
-				DFS_visit(graph, i, used);
+				vertex_groups[i] = neighbor_group;
+				if (!dfsVisit(graph, i, vertex_groups))
+				{
+					return false;
+				}
+			}
+			else
+			{
+				if (vertex_groups[i] != neighbor_group)
+				{
+					return false;
+				}
 			}
 		}
+		return true;
 	}
 
-	std::vector<Graph::Vertex> VerticesInComponentContaining(Graph& graph, const Graph::Vertex& vertex) 
+	bool isBipartiteGraph(const Graph& graph)
 	{
-		size_t vertex_count = graph.getVertexCount();
-		std::vector<bool> used(vertex_count + 1, false);
-		std::vector<Graph::Vertex> vertices_in_component;
-		DFS_visit(graph, vertex, used);
-		for (Graph::Vertex i = 1; i < vertex_count + 1; ++i)
+		std::vector<VertexGroup> vertex_groups(graph.getVertexCount() + 1, NOT_SET);
+		for (Graph::Vertex i = 1; i < graph.getVertexCount() + 1; ++i)
 		{
-			if (used[i])
+			if (vertex_groups[i] == NOT_SET)
 			{
-				vertices_in_component.push_back(i);
+				vertex_groups[i] = FIRST;
+				if (!dfsVisit(graph, i, vertex_groups))
+				{
+					return false;
+				}
 			}
 		}
-		return vertices_in_component;
+		return true;
 	}
 }
 
 
 int main()
 {
-	size_t n;
-	Graph::Vertex s;
-	std::cin >> n >> s;
+	size_t n, m;
+	std::cin >> n >> m;
 	GraphAdjList graph_adj_list(n, false);
-	for (Graph::Vertex i = 1; i < n + 1; ++i)
+	for (size_t i = 0; i < m; ++i)
 	{
-		for (Graph::Vertex j = 1; j < n + 1; ++j)
-		{
-			size_t input;
-			std::cin >> input;
-			if (input == 1)
-			{
-				graph_adj_list.addEdge(i, j);
-			}
-		}
+		Graph::Vertex start, finish;
+		std::cin >> start >> finish;
+		graph_adj_list.addEdge(start, finish);
 	}
-	std::cout << GraphProcessing::VerticesInComponentContaining(graph_adj_list, s).size();
+	if (GraphProcessing::isBipartiteGraph(graph_adj_list))
+	{
+		std::cout << "YES";
+	}
+	else
+	{
+		std::cout << "NO";
+	}
 	//system("PAUSE");
 	return 0;
 }
